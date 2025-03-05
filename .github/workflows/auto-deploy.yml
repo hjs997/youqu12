@@ -3,39 +3,41 @@ name: Redeploy Choreo
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */3 * * *'
+    - cron: '0 */3 * * *'  # 每 3 小时运行一次
 
 jobs:
   Redeploy:
     name: Redeploy Choreo
-
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.0.0
-        with:
-          fetch-depth: 1
+      - name: Checkout 代码
+        uses: actions/checkout@v4  # 最新版 checkout
 
-      - name: Renew README.md
+      - name: 更新 README.md
         run: |
-            DATE=$(date "+%Y/%m/%d %H:%M:%S")
-            echo "${DATE}" > README.md
-            git checkout --orphan tmp_work
-            git branch -d main
-            echo "DATE=${DATE}" >> $GITHUB_ENV
+          DATE=$(date "+%Y/%m/%d %H:%M:%S")
+          echo "${DATE}" > README.md
+          echo "DATE=${DATE}" >> $GITHUB_ENV
 
-      - name: Upload to repository
-        uses: stefanzweifel/git-auto-commit-action@v4.16.0
+      - name: 认证 GitHub
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+
+      - name: 提交更改
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: Auto deploy by Github Actions, ${{ env.DATE }}
-          create_branch: true
+          commit_message: "Auto deploy by Github Actions, ${{ env.DATE }}"
           branch: main
           push_options: --force
 
-      - name: Delete old workflow runs
+      - name: 删除旧的 Workflow 运行记录
         uses: MajorScruffy/delete-old-workflow-runs@v0.3.0
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           repository: ${{ github.repository }}
           older-than-seconds: 3600
+

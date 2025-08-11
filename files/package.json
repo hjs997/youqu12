@@ -1,9 +1,9 @@
 {
-  "name": "Choreo",
+  "name": "happytest",
   "version": "1.0.0",
   "description": "nodejs",
   "main": "index.js",
-  "author": "eooce",
+  "author": "youqu12",
   "license": "MIT",
   "private": false,
   "scripts": {
